@@ -1,0 +1,12 @@
+From: "HR Department" <hr@company.com>
+To: employee@company.com
+Subject: Upcoming Holiday Schedule
+
+Hi Team,
+
+Please find attached the approved holiday schedule for Q4. Please review your remaining leave days and submit any requests by the end of the month.
+
+Note: The office will be closed on December 25th and January 1st.
+
+Best regards,
+Human Resources

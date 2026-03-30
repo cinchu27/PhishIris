@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Report - PhishIris</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <style>
+        /* Additional inline styles for dynamic colors */
+        {% if data.analysis.risk_level.level == 'Critical' %}
+        .risk-card { border-color: #ef4444; box-shadow: 0 0 40px rgba(239, 68, 68, 0.4); }
+        {% elif data.analysis.risk_level.level == 'High' %}
+        .risk-card { border-color: #f97316; box-shadow: 0 0 40px rgba(249, 115, 22, 0.4); }
+        {% elif data.analysis.risk_level.level == 'Medium' %}
+        .risk-card { border-color: #eab308; box-shadow: 0 0 40px rgba(234, 179, 8, 0.4); }
+        {% else %}
+        .risk-card { border-color: #22c55e; box-shadow: 0 0 40px rgba(34, 197, 94, 0.4); }
+        {% endif %}
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div class="container-fluid" style="max-width: 1400px;">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <i class="fas fa-shield-alt me-2" style="color: #3b82f6; font-size: 1.5rem;"></i>
+                <span style="font-weight: 700; font-size: 1.4rem;">Phish<span style="color: #3b82f6;">Iris</span></span>
+            </a>
+            
+            <div class="d-flex align-items-center gap-3">
+                <span style="color: #9ca3af; font-size: 0.85rem;">
+                    <i class="fas fa-clock me-1"></i>{{ data.timestamp }}
+                </span>
+                <span style="color: #6b7280; font-size: 0.85rem;">
+                    Scan ID: {{ data.scan_id }}
+                </span>
+                <a href="/" class="btn btn-outline" style="padding: 0.5rem 1rem;">
+                    <i class="fas fa-plus me-1"></i>New Scan
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+        
+        <!-- ==================== HERO: Risk Overview ==================== -->
+        <div class="risk-card card animate-fade-in" style="margin-bottom: 2rem;">
+            <div class="row align-items-center">
+                <div class="col-lg-4 text-center" style="border-right: 1px solid rgba(255,255,255,0.1);">
+                    <div style="text-transform: uppercase; letter-spacing: 2px; color: #9ca3af; font-size: 0.85rem; margin-bottom: 0.5rem;">
+                        Risk Assessment
+                    </div>
+                    <div class="risk-level-badge {{ data.analysis.risk_level.level|lower }}">
+                        {{ data.analysis.risk_level.level }}
+                    </div>
+                    <div style="margin-top: 1rem; font-size: 0.9rem; color: #9ca3af;">
+                        <i class="fas fa-{{ 'skull-crossbones' if data.analysis.risk_level.level == 'Critical' else 'exclamation-triangle' if data.analysis.risk_level.level in ['High', 'Medium'] else 'check-circle' }} me-2"></i>
+                        {{ data.analysis.attack_type }}
+                    </div>
+                </div>
+                
+                <div class="col-lg-5" style="padding: 1.5rem 2rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="color: #9ca3af;">Threat Score</span>
+                        <span style="font-weight: 700; color: {{ data.analysis.risk_level.color }};">{{ data.analysis.score }}/100</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill {{ data.analysis.risk_level.level|lower }}" 
+                             style="width: {{ [data.analysis.score, 100]|min }}%;"></div>
+                    </div>
+                    
+                    <div class="summary-grid" style="margin-top: 1.5rem; grid-template-columns: repeat(2, 1fr);">
+                        <div style="text-align: center; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                            <div style="font-size: 1.75rem; font-weight: 700; color: #3b82f6;">{{ data.analysis.confidence }}%</div>
+                            <div style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase;">Confidence</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                            <div style="font-size: 1.75rem; font-weight: 700; color: #8b5cf6;">{{ data.analysis.detections|length }}</div>
+                            <div style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase;">Detections</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 text-center" style="padding: 1.5rem; border-left: 1px solid rgba(255,255,255,0.1);">
+                    <div style="color: #9ca3af; font-size: 0.85rem; margin-bottom: 1rem;">Quick Actions</div>
+                    <button class="btn btn-danger w-100 mb-2" style="padding: 0.75rem;">
+                        <i class="fas fa-ban me-2"></i>Block Sender
+                    </button>
+                    <button class="btn btn-outline w-100" style="padding: 0.75rem;">
+                        <i class="fas fa-flag me-2"></i>Report to SOC
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Indicators Panel ==================== -->
+        <div class="card animate-fade-in animate-delay-1" style="margin-bottom: 1.5rem;">
+            <div class="card-header">
+                <h4 class="card-title">
+                    <i class="fas fa-check-double"></i>
+                   <span style="color: #3b82f6;"> Security Indicators</span>
+                </h4>
+                <span class="badge badge-info">
+                    {{ data.analysis.indicators.values() | selectattr('search', 'equalto', 'fail') | list | length }} Issues Found
+                </span>
+            </div>
+            
+            <div class="indicator-grid">
+                <!-- SPF -->
+                {% set spf_status = data.analysis.indicators.spf %}
+                <div class="indicator-item {{ 'fail' if spf_status == 'fail' else 'pass' if spf_status == 'pass' else 'unknown' }}">
+                    <div class="indicator-icon {{ 'fail' if spf_status == 'fail' else 'pass' if spf_status == 'pass' else 'unknown' }}">
+                        <i class="fas fa-{{ 'times' if spf_status == 'fail' else 'check' if spf_status == 'pass' else 'question' }}"></i>
+                    </div>
+                    <div class="indicator-info">
+                        <h5>SPF Record</h5>
+                        <span>{{ spf_status|upper if spf_status else 'NOT FOUND' }}</span>
+                    </div>
+                </div>
+
+                <!-- DKIM -->
+                {% set dkim_status = data.analysis.indicators.dkim %}
+                <div class="indicator-item {{ 'fail' if dkim_status == 'fail' else 'pass' if dkim_status == 'pass' else 'unknown' }}">
+                    <div class="indicator-icon {{ 'fail' if dkim_status == 'fail' else 'pass' if dkim_status == 'pass' else 'unknown' }}">
+                        <i class="fas fa-{{ 'times' if dkim_status == 'fail' else 'check' if dkim_status == 'pass' else 'question' }}"></i>
+                    </div>
+                    <div class="indicator-info">
+                        <h5>DKIM Signature</h5>
+                        <span>{{ dkim_status|upper if dkim_status else 'NOT FOUND' }}</span>
+                    </div>
+                </div>
+
+                <!-- DMARC -->
+                {% set dmarc_status = data.analysis.indicators.dmarc %}
+                <div class="indicator-item {{ 'fail' if dmarc_status == 'fail' else 'pass' if dmarc_status == 'pass' else 'unknown' }}">
+                    <div class="indicator-icon {{ 'fail' if dmarc_status == 'fail' else 'pass' if dmarc_status == 'pass' else 'unknown' }}">
+                        <i class="fas fa-{{ 'times' if dmarc_status == 'fail' else 'check' if dmarc_status == 'pass' else 'question' }}"></i>
+                    </div>
+                    <div class="indicator-info">
+                        <h5>DMARC Policy</h5>
+                        <span>{{ dmarc_status|upper if dmarc_status else 'NOT FOUND' }}</span>
+                    </div>
+                </div>
+
+                <!-- Sender Mismatch -->
+                {% set mismatch = data.analysis.indicators.sender_mismatch %}
+                <div class="indicator-item {{ 'warning' if mismatch else 'pass' }}">
+                    <div class="indicator-icon {{ 'warning' if mismatch else 'pass' }}">
+                        <i class="fas fa-{{ 'exclamation-triangle' if mismatch else 'check' }}"></i>
+                    </div>
+                    <div class="indicator-info">
+                        <h5>Sender Consistency</h5>
+                        <span>{{ 'MISMATCH DETECTED' if mismatch else 'CONSISTENT' }}</span>
+                    </div>
+                </div>
+
+                <!-- Urgency -->
+                {% set urgency = data.analysis.indicators.urgency_detected %}
+                <div class="indicator-item {{ 'warning' if urgency else 'pass' }}">
+                    <div class="indicator-icon {{ 'warning' if urgency else 'pass' }}">
+                        <i class="fas fa-{{ 'bolt' if urgency else 'check' }}"></i>
+                    </div>
+                    <div class="indicator-info">
+                        <h5>Urgency Tactics</h5>
+                        <span>{{ 'DETECTED' if urgency else 'NONE' }}</span>
+                    </div>
+                </div>
+
+                <!-- Suspicious Links -->
+                {% set sus_links = data.analysis.indicators.suspicious_links %}
+                <div class="indicator-item {{ 'fail' if sus_links else 'pass' }}">
+                    <div class="indicator-icon {{ 'fail' if sus_links else 'pass' }}">
+                        <i class="fas fa-{{ 'link' if sus_links else 'check' }}"></i>
+                    </div>
+                    <div class="indicator-info">
+                        <h5>Suspicious Links</h5>
+                        <span>{{ 'FOUND' if sus_links else 'NONE' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid: IOCs & Recommendations -->
+        <div class="row" style="margin-bottom: 1.5rem;">
+            
+            <!-- IOC Panel -->
+            <div class="col-lg-8 mb-4">
+                <div class="card animate-fade-in animate-delay-2" style="height: 100%;">
+                    <div class="card-header">
+                        <h4 class="card-title">
+                            <i class="fas fa-bug"></i>
+                           <span style="color: #3b82f6;"> Indicators of Compromise (IOCs)</span>
+                        </h4>
+                        <span class="badge badge-info">
+                            {{ data.iocs.ip_addresses|length + data.iocs.domains|length + data.iocs.urls|length }} Found
+                        </span>
+                    </div>
+                    
+                    {% if data.iocs.ip_addresses or data.iocs.domains or data.iocs.urls %}
+                    <div style="overflow-x: auto;">
+                        <table class="ioc-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 100px;">Type</th>
+                                    <th>Value</th>
+                                    <th style="width: 120px;">Reputation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ip in data.iocs.ip_addresses %}
+                                <tr>
+                                    <td><span class="badge badge-info">IP</span></td>
+                                    <td class="ioc-value">{{ ip.value }}</td>
+                                    <td>
+                                        {% if ip.reputation == 'malicious' %}
+                                            <span class="badge badge-malicious"><i class="fas fa-times-circle me-1"></i>Malicious</span>
+                                        {% elif ip.reputation == 'suspicious' %}
+                                            <span class="badge badge-suspicious"><i class="fas fa-exclamation-circle me-1"></i>Suspicious</span>
+                                        {% else %}
+                                            <span class="badge badge-clean"><i class="fas fa-check-circle me-1"></i>Clean</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                
+                                {% for domain in data.iocs.domains %}
+                                <tr>
+                                    <td><span class="badge badge-info">Domain</span></td>
+                                    <td class="ioc-value">{{ domain.value }}</td>
+                                    <td>
+                                        {% if domain.reputation == 'malicious' %}
+                                            <span class="badge badge-malicious"><i class="fas fa-times-circle me-1"></i>Malicious</span>
+                                        {% elif domain.reputation == 'suspicious' %}
+                                            <span class="badge badge-suspicious"><i class="fas fa-exclamation-circle me-1"></i>Suspicious</span>
+                                        {% else %}
+                                            <span class="badge badge-clean"><i class="fas fa-check-circle me-1"></i>Clean</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                
+                                {% for url in data.iocs.urls[:10] %}
+                                <tr>
+                                    <td><span class="badge badge-info">URL</span></td>
+                                    <td class="ioc-value">{{ url.value or url.url }}</td>
+                                    <td>
+                                        {% if url.reputation == 'malicious' %}
+                                            <span class="badge badge-malicious"><i class="fas fa-times-circle me-1"></i>Malicious</span>
+                                        {% elif url.reputation == 'suspicious' %}
+                                            <span class="badge badge-suspicious"><i class="fas fa-exclamation-circle me-1"></i>Suspicious</span>
+                                        {% else %}
+                                            <span class="badge badge-clean"><i class="fas fa-check-circle me-1"></i>Clean</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div style="text-align: center; padding: 3rem; color: #6b7280;">
+                        <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>No IOCs extracted from this email.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="col-lg-4 mb-4">
+                <div class="card animate-fade-in animate-delay-3" style="height: 100%;">
+                    <div class="card-header">
+                        <h4 class="card-title">
+                            <i class="fas fa-lightbulb"></i>
+                           <span style="color: #3b82f6;"> Recommendations</span>
+                        </h4>
+                    </div>
+                    
+                    <div class="recommendation-list">
+                        {% for rec in data.analysis.recommendations %}
+                        <div class="recommendation-item {{ rec.priority }}">
+                            <div class="recommendation-icon {{ rec.priority }}">
+                                <i class="fas fa-{{ rec.icon }}"></i>
+                            </div>
+                            <div class="recommendation-content">
+                                <h5>{{ rec.action }}</h5>
+                                <p>{{ rec.description }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Content Analysis -->
+        <div class="card animate-fade-in animate-delay-4" style="margin-bottom: 1.5rem;">
+            <div class="card-header">
+                <h4 class="card-title">
+                    <i class="fas fa-envelope-open-text"></i>
+                   <span style="color: #3b82f6;"> Email Content Analysis</span>
+                </h4>
+                <div>
+                    {% if data.email.sender %}
+                    <span style="color: #9ca3af; font-size: 0.85rem;">
+                        <i class="fas fa-user me-1"></i>From: {{ data.email.sender }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Email Headers -->
+            {% if data.email.headers %}
+            <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div style="font-size: 0.85rem; margin-bottom: 0.5rem;">
+                            <span style="color: #6b7280;">Subject:</span> 
+                            <span style="color: #f9fafb;">{{ data.email.headers.get('Subject', 'N/A') }}</span>
+                        </div>
+                        <div style="font-size: 0.85rem; margin-bottom: 0.5rem;">
+                            <span style="color: #6b7280;">From:</span> 
+                            <span style="color: #f9fafb;">{{ data.email.headers.get('From', 'N/A') }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="font-size: 0.85rem; margin-bottom: 0.5rem;">
+                            <span style="color: #6b7280;">Reply-To:</span> 
+                            <span style="color: #f9fafb;">{{ data.email.headers.get('Reply-To', 'N/A') }}</span>
+                        </div>
+                        <div style="font-size: 0.85rem; margin-bottom: 0.5rem;">
+                            <span style="color: #6b7280;">Date:</span> 
+                            <span style="color: #f9fafb;">{{ data.email.headers.get('Date', 'N/A') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Highlighted Body -->
+            <div class="email-content">
+                {#- Simple highlighting logic using Jinja replace -#}
+                {% set body = data.email.body or 'No email body content available.' %}
+                {% for detection in data.analysis.detections %}
+                    {% if detection.keywords %}
+                        {% for keyword in detection.keywords %}
+                            {% set body = body | replace(keyword, '<span class="highlight-urgency">' ~ keyword ~ '</span>') %}
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+                {{ body | safe }}
+            </div>
+            
+            <!-- Legend -->
+            <div style="margin-top: 1rem; display: flex; gap: 1.5rem; justify-content: center; font-size: 0.85rem;">
+                <span><span class="highlight-urgency" style="padding: 0.1rem 0.5rem;">Urgency</span><span style="color: #D3D3D3;"> Pressure Tactics</span></span>
+                <span><span class="highlight-credential" style="padding: 0.1rem 0.5rem;">Credential</span><span style="color: #D3D3D3;"> Harvesting Terms</span></span>
+                <span><span class="highlight-link" style="padding: 0.1rem 0.5rem;">Link</span><span style="color: #D3D3D3;"> Suspicious URLs</span></span>
+            </div>
+        </div>
+
+        <!-- Detection Details -->
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">
+                    <i class="fas fa-list-alt"></i>
+                   <span style="color: #3b82f6;"> Detection Details</span>
+                </h4>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="ioc-table">
+                    <thead>
+                        <tr>
+                            <th>Detection Type</th>
+                            <th>Status</th>
+                            <th>Details</th>
+                            <th style="width: 100px;">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detection in data.analysis.detections %}
+                        <tr>
+                            <td>
+                                <strong>{{ detection.type }}</strong>
+                            </td>
+                            <td>
+                                {% if detection.status == 'fail' %}
+                                    <span class="badge badge-malicious">Fail</span>
+                                {% elif detection.status == 'warning' %}
+                                    <span class="badge badge-suspicious">Warning</span>
+                                {% elif detection.status == 'pass' %}
+                                    <span class="badge badge-clean">Pass</span>
+                                {% else %}
+                                    <span class="badge badge-unknown">Unknown</span>
+                                {% endif %}
+                            </td>
+                            <td><span class="detail-text">{{ detection.message }}</span></td>
+                            <td style="font-weight: 600; color: {{ '#ef4444' if detection.score > 20 else '#f97316' if detection.score > 0 else '#22c55e' }};">
+                                +{{ detection.score }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer style="text-align: center; padding: 2rem; color: #6b7280; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 2rem;">
+        <p style="margin: 0;">
+            <i class="fas fa-shield-alt me-2"></i>
+            PhishIris Analysis Report - Generated {{ data.timestamp }}
+        </p>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Animate elements on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

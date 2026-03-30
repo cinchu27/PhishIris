@@ -1,0 +1,18 @@
+From: "Support Team" <support@secure-bankk-verify.com>
+Reply-To: admin@malicious-domain.ru
+To: victim@company.com
+Subject: URGENT: Your account will be suspended
+
+Dear Valued Customer,
+
+We have detected unusual activity on your account. For your security, your access has been temporarily limited.
+
+To restore your access, you must verify your identity immediately.
+
+Click the link below to verify your credentials:
+http://185.199.100.12/secure-login/verify.php
+
+If you do not verify within 24 hours, your account will be permanently disabled.
+
+Best regards,
+Security Team

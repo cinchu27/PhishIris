@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishIris - Phishing Detection System</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <i class="fas fa-shield-alt me-2" style="color: #3b82f6; font-size: 1.5rem;"></i>
+                <span style="font-weight: 700; font-size: 1.4rem;">Phish<span style="color: #3b82f6;">Iris</span></span>
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge badge-info" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 0.5rem 1rem; border-radius: 50px;">
+                    <i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 0.5rem;"></i>
+                    System Online
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container" style="padding-top: 3rem; padding-bottom: 3rem;">
+        <!-- Hero Section -->
+        <div class="text-center mb-5">
+            <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem;">
+                Advanced <span style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Phishing Detection</span>
+            </h1>
+            <p style="font-size: 1.2rem; color: #9ca3af; max-width: 600px; margin: 0 auto;">
+                Analyze suspicious emails with our roboust detection engine. 
+                Extract IOCs, verify threat intelligence, and protect your organization.
+            </p>
+        </div>
+
+        <!-- Features Pills -->
+        <div class="d-flex justify-content-center flex-wrap gap-3 mb-5">
+            <span class="badge" style="background: rgba(34, 197, 94, 0.15); color: #22c55e; padding: 0.75rem 1.25rem; border-radius: 50px; font-weight: 500;">
+                <i class="fas fa-envelope-open-text me-2"></i>Email Parsing
+            </span>
+            <span class="badge" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 0.75rem 1.25rem; border-radius: 50px; font-weight: 500;">
+                <i class="fas fa-search me-2"></i>IOC Extraction
+            </span>
+            <span class="badge" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.75rem 1.25rem; border-radius: 50px; font-weight: 500;">
+                <i class="fas fa-virus me-2"></i>Threat Intel
+            </span>
+            <span class="badge" style="background: rgba(249, 115, 22, 0.15); color: #f97316; padding: 0.75rem 1.25rem; border-radius: 50px; font-weight: 500;">
+                <i class="fas fa-shield-virus me-2"></i>Risk Scoring
+            </span>
+        </div>
+
+        <!-- Input Card -->
+        <div class="card" style="max-width: 900px; margin: 0 auto; padding: 0;">
+            <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding: 1.5rem;">
+                <h4 class="card-title" style="margin: 0;">
+                    <i class="fas fa-upload"></i>
+                   <span style="color: #3b82f6;"> Submit Email for Analysis</span>
+                </h4>
+            </div>
+            
+            <div style="padding: 2rem;">
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }}" 
+                                 style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; border-radius: 8px; margin-bottom: 1.5rem;">
+                                <i class="fas fa-exclamation-circle me-2"></i>{{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+
+                <!-- ADD THIS BLOCK BEFORE THE FORM -->
+                <div class="d-flex justify-content-center gap-2 mb-4">
+                    <span style="color: #6b7280; font-size: 0.9rem; padding: 0.5rem;">Quick Load Samples:</span>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="loadSample('phishing')">
+                        <i class="fas fa-virus me-1"></i>Phishing Test
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="loadSample('bec')">
+                        <i class="fas fa-user-tie me-1"></i>BEC Test
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="loadSample('safe')">
+                        <i class="fas fa-check-circle me-1"></i>Safe Email
+                    </button>
+                </div>
+                <!-- END QUICK LOAD BLOCK -->
+
+
+                <form action="/analyze" method="POST" enctype="multipart/form-data">
+                    <!-- Tab Navigation -->
+                    <ul class="nav nav-pills mb-4" style="background: var(--bg-tertiary); padding: 0.5rem; border-radius: 10px;">
+                        <li class="nav-item" style="flex: 1;">
+                            <button class="nav-link active w-100" data-bs-toggle="pill" href="#paste-tab" 
+                                    style="background: transparent; color: #9ca3af; border-radius: 8px; font-weight: 500;">
+                                <i class="fas fa-paste me-2"></i>Paste Email
+                            </button>
+                        </li>
+                        <li class="nav-item" style="flex: 1;">
+                            <button class="nav-link w-100" data-bs-toggle="pill" href="#upload-tab"
+                                    style="background: transparent; color: #9ca3af; border-radius: 8px; font-weight: 500;">
+                                <i class="fas fa-file-upload me-2"></i>Upload File
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- Paste Email Tab -->
+                        <div class="tab-pane fade show active" id="paste-tab">
+                            <div class="form-group">
+                                <label class="form-label">Raw Email Content</label>
+                                <textarea name="email_text" class="form-control" rows="12" 
+                                          placeholder="Paste raw email headers and body here...
+
+Example:
+From: attacker@malicious.com
+To: victim@company.com
+Subject: Urgent: Verify Your Account
+
+Dear User,
+Click here to verify your account immediately..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Upload File Tab -->
+                        <div class="tab-pane fade" id="upload-tab">
+                            <div class="form-group">
+                                <label class="form-label">Upload Email File</label>
+                                <div class="file-upload">
+                                    <input type="file" name="email_file" accept=".txt,.eml,.msg">
+                                    <div class="file-upload-icon">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <div class="file-upload-text">
+                                        <h4>Drag & drop or click to upload</h4>
+                                        <p>Supported formats: .txt, .eml, .msg (Max 16MB)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Options -->
+                    <div class="d-flex justify-content-between align-items-center mt-4 mb-4" 
+                         style="padding: 1rem; background: var(--bg-tertiary); border-radius: 8px;">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-info-circle" style="color: #3b82f6;"></i>
+                            <span style="font-size: 0.9rem; color: #9ca3af;">
+                                Analysis includes VirusTotal lookup & IOC extraction
+                            </span>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" checked style="cursor: pointer;">
+                            <label class="form-check-label" style="font-size: 0.9rem; color: #9ca3af;">
+                                Deep Scan
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary w-100" style="padding: 1rem; font-size: 1.1rem;">
+                        <i class="fas fa-search me-2"></i>
+                        Analyze Email
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="row mt-5" style="max-width: 900px; margin: 2rem auto 0;">
+            <div class="col-md-4 mb-3">
+                <div class="card text-center" style="padding: 1.5rem;">
+                    <div style="font-size: 2.5rem; font-weight: 800; color: #3b82f6;">50+</div>
+                    <div style="color: #9ca3af; font-size: 0.9rem;">Detection Rules</div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card text-center" style="padding: 1.5rem;">
+                    <div style="font-size: 2.5rem; font-weight: 800; color: #22c55e;">70+</div>
+                    <div style="color: #9ca3af; font-size: 0.9rem;">Threat Engines</div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card text-center" style="padding: 1.5rem;">
+                    <div style="font-size: 2.5rem; font-weight: 800; color: #8b5cf6;">24/7</div>
+                    <div style="color: #9ca3af; font-size: 0.9rem;">SOC Ready</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer style="text-align: center; padding: 2rem; color: #6b7280; border-top: 1px solid rgba(255,255,255,0.1);">
+        <p style="margin: 0;">
+            <i class="fas fa-shield-alt me-2"></i>
+            PhishIris - Advanced Phishing Detection System
+        </p>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- ... existing footer code ... -->
+
+    <!-- ADD THIS SCRIPT FOR SAMPLE DATA LOADER -->
+    <script>
+        // Sample Email Data
+        const samples = {
+            phishing: `From: "Support Team" <support@secure-bankk-verify.com>
+Reply-To: admin@malicious-domain.ru
+To: victim@company.com
+Subject: URGENT: Your account will be suspended
+
+Dear Valued Customer,
+
+We have detected unusual activity on your account. For your security, your access has been temporarily limited.
+
+To restore your access, you must verify your identity immediately.
+
+Click the link below to verify your credentials:
+http://185.199.100.12/secure-login/verify.php
+
+If you do not verify within 24 hours, your account will be permanently disabled.
+
+Best regards,
+Security Team`,
+            bec: `From: "CEO - John Doe" <j.doe@company-external.com>
+To: finance@company.com
+Subject: Urgent Wire Transfer Request
+
+Hi,
+
+I am in a meeting and need you to process a wire transfer urgently for a new vendor.
+
+Vendor: TechSolutions LLC
+Account: 123456789
+Routing: 021000021
+Amount: $45,000
+
+Please process this immediately and send confirmation. I will check my email later.
+
+Thanks,
+John
+CEO`,
+            safe: `From: "HR Department" <hr@company.com>
+To: employee@company.com
+Subject: Upcoming Holiday Schedule
+
+Hi Team,
+
+Please find attached the approved holiday schedule for Q4. Please review your remaining leave days and submit any requests by the end of the month.
+
+Note: The office will be closed on December 25th and January 1st.
+
+Best regards,
+Human Resources`
+        };
+
+        function loadSample(type) {
+            const textarea = document.querySelector('textarea[name="email_text"]');
+            if (textarea && samples[type]) {
+                textarea.value = samples[type];
+                // Switch to the "Paste Email" tab to show the user the text
+                const pasteTab = new bootstrap.Tab(document.querySelector('#paste-tab'));
+                pasteTab.show();
+                
+                // Visual feedback
+                const btn = event.target;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check me-1"></i>Loaded!';
+                btn.classList.remove('btn-outline-secondary');
+                btn.classList.add('btn-success');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-secondary');
+                }, 2000);
+            }
+        }
+    </script>
+</body>
+</html>

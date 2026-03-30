@@ -1,0 +1,18 @@
+From: "CEO - John Doe" <j.doe@company-external.com>
+To: finance@company.com
+Subject: Urgent Wire Transfer Request
+
+Hi,
+
+I am in a meeting and need you to process a wire transfer urgently for a new vendor.
+
+Vendor: TechSolutions LLC
+Account: 123456789
+Routing: 021000021
+Amount: $45,000
+
+Please process this immediately and send confirmation. I will check my email later.
+
+Thanks,
+John
+CEO
